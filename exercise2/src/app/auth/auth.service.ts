@@ -1,28 +1,47 @@
-import { HttpClient } from "@angular/common/http";
+// src/app/auth.service.ts
 import { Injectable } from '@angular/core';
-import { Route, Router } from "@angular/router";
-import { Observable } from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-
+  isAuthenticated = false;
+  authToken: string | null = null;
   apiUrl: string = 'https://localhost:3000';
 
-  constructor(private router: Router) { }
-//   login (username: string, password: string): Observable<any> {
-//     return this.http.post(this.apiUrl + '/api/User/login', { username, password });
-//   }
 
-//   logout = () => {
-//     localStorage.removeItem("authToken");
-//     localStorage.removeItem("userName");
-//     this.router.navigate(['login'])
-//   }
+  constructor(private http: HttpClient) {}
 
-//   public isAuthenticated() : boolean {
-//     const token = localStorage.getItem('authToken');
-//     return token !== "";
-//   }
+  login(username: string, password: string): Observable<any> {
+    return this.http.post<any>(this.apiUrl, { username, password }).pipe(
+      tap((response) => {
+        if (response && response.token) {
+          this.isAuthenticated = true;
+          this.authToken = response.token;
+        //   localStorage.setItem('authToken', this.authToken);
+        }
+      }),
+      catchError((error) => {
+        console.error('Login failed:', error);
+        return of(null);
+      })
+    );
+  }
+
+  logout(): void {
+    this.isAuthenticated = false;
+    this.authToken = null;
+    localStorage.removeItem('authToken');
+  }
+
+  getAuthToken(): string | null {
+    return this.authToken;
+  }
+
+  isAuthenticatedUser(): boolean {
+    return this.isAuthenticated;
+  }
 }
