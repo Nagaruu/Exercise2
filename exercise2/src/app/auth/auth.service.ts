@@ -20,8 +20,13 @@ export class AuthService {
     return this.http.get(`${this.apiUrl}/users`);
   }
 
-  authenticate(user: User): Observable<any> {
-    return this.http.post<User[]>(`${this.apiUrl}/users`, user);
+  authenticate(username: string, password: string): Observable<any> {
+    return this.http.post<User>(`${this.apiUrl}/users`, { username, password })
+    .pipe(
+      tap((user: User) => {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+      })
+    );
   }
 
   logout(): void {

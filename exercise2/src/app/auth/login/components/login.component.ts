@@ -2,6 +2,7 @@ import { Component, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { User } from '../../shared/model/user';
 
 @Component({
   selector: 'app-login',
@@ -27,19 +28,22 @@ export class LoginComponent {
 
   login() {
     if (this.form.valid) {
-      const username = this.f['username'].value;
-      const password = this.f['password'].value;
-
       this.authService.getUsers().subscribe(
         (response) => {
           const user = response.find((a:any)=>{
+            console.log(response.token);
+            
             return a.username === this.form.value.username && a.password === this.form.value.password 
           })
-          
-          localStorage.setItem('token', response.token);
+        }
+      );
+      const { username, password } = this.form.value;
+
+      this.authService.authenticate(username, password).subscribe(
+        () => {
         },
         (error) => {
-          console.error('Authentication failed:', error);
+          console.error('Login failed:', error);
         }
       );
     }
