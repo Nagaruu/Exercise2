@@ -21,16 +21,27 @@ export class LoginComponent {
     });
   }
 
-  login(): void {
-    this.authService.login(this.username, this.password).subscribe((result) => {
-      if (result) {
-        // Nếu đăng nhập thành công
-        const redirectUrl = localStorage.getItem('redirectUrl') || '/dashboard';
-        localStorage.removeItem('redirectUrl');
-        this.router.navigateByUrl(redirectUrl);
-      } else {
-        // Xử lý thông báo lỗi đăng nhập không thành công
-      }
-    });
+  get f() {
+    return this.form.controls;
+  }
+
+  login() {
+    if (this.form.valid) {
+      const username = this.f['username'].value;
+      const password = this.f['password'].value;
+
+      this.authService.getUsers().subscribe(
+        (response) => {
+          const user = response.find((a:any)=>{
+            return a.username === this.form.value.username && a.password === this.form.value.password 
+          })
+          
+          localStorage.setItem('token', response.token);
+        },
+        (error) => {
+          console.error('Authentication failed:', error);
+        }
+      );
+    }
   }
 }
